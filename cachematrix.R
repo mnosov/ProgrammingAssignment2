@@ -7,8 +7,7 @@
 # creates a special "matrix", which is really a list containing functions to
 #    set the value of the matrix
 #    get the value of the matrix
-#    set the value of the inverted matrix (setInverse)
-#    get the value og the inverted matrix (getInverse)
+#    get the cached value of the inverse of the matrix (getCachedSolve)
 # Example:
 #   x<-makeCacheMatrix(rbind(c(1,2), c(1,1))
 #   x$get()
@@ -27,16 +26,21 @@ makeCacheMatrix <- function(x = matrix()) {
         #define a function to get value of matrix
         get <- function() x
 
-        #define a function to set 'inverse' matrix value to specified value
-        setInverse <- function(solve) inverse <<- solve
+        #define a function to get cached value of inverse of the matrix
+        getCachedSolve <- function(...) {
+                if(!is.null(inverse)) {
+                        # if cached value exists, just return it
+                        message("getting cached data")
+                        return(inverse)
+                }
+                # otherwise calculate inverse of the matrix
+                inverse <<- solve(x, ...)
+                # return value of inverse of the matrix
+                inverse
+        }
 
-        #define a function to get cached value set by 'setInverse' function
-        getInverse <- function() inverse
-
-        # return a list of those 4 functions
-        list(set = set, get = get,
-             setInverse = setInverse,
-             getInverse = getInverse)
+        # return a list of those 3 functions
+        list(set = set, get = get, getCachedSolve = getCachedSolve)
 }
 
 ## Return a matrix that is the inverse of 'x'
@@ -59,7 +63,7 @@ makeCacheMatrix <- function(x = matrix()) {
 # getting cached data
 # [1] TRUE
 #
-## 4) Check that 'set' function clears cached matrix, e.g.
+## 4) Check that 'set' function clears cached inverse of the matrix, e.g.
 #     there is no message 'getting cached data'  in the output
 #
 #> x$set(rbind(c(2,3),c(3,4)))
@@ -67,18 +71,6 @@ makeCacheMatrix <- function(x = matrix()) {
 #[1] TRUE
 #
 cacheSolve <- function(x, ...) {
-        res <- x$getInverse() #try to get already cached value of inverted matrix
-        if(!is.null(res)) {
-                # if cached value exists, just return it
-                message("getting cached data")
-                return(res)
-        }
-        # otherwise calculate inverted matrix
-        res <- solve(x$get(), ...)
-
-        # update the cached value of interted matrix
-        x$setInverse(res)
-
-        # return value of inverted matrix
-        res
+        # just call 'getCachedSolve' method of x
+        x$getCachedSolve(...)
 }
