@@ -7,8 +7,8 @@
 # creates a special "matrix", which is really a list containing functions to
 #    set the value of the matrix
 #    get the value of the matrix
-#    set the value of the inverted matrix (setinverse)
-#    get the value og the inverted matrix (getinverse)
+#    set the value of the inverted matrix (setInverse)
+#    get the value og the inverted matrix (getInverse)
 # Example:
 #   x<-makeCacheMatrix(rbind(c(1,2), c(1,1))
 #   x$get()
@@ -17,22 +17,26 @@
 #[2,]    1    1
 makeCacheMatrix <- function(x = matrix()) {
         inverse <- NULL # 'inverse' is cached value of inverted matrix
+
+        #define a function to set new value of matrix
         set <- function(y) {
                 x <<- y          # set x value to new matrix y
                 inverse <<- NULL # and clears cached value of inverted matrix
         }
+
+        #define a function to get value of matrix
         get <- function() x
 
-        #set 'inverse' value to specified argument's value
-        setinverse <- function(solve) inverse <<- solve
+        #define a function to set 'inverse' matrix value to specified value
+        setInverse <- function(solve) inverse <<- solve
 
-        #get cached value set by 'setinverse' function
-        getinverse <- function() inverse
+        #define a function to get cached value set by 'setInverse' function
+        getInverse <- function() inverse
 
         # return a list of those 4 functions
         list(set = set, get = get,
-             setinverse = setinverse,
-             getinverse = getinverse)
+             setInverse = setInverse,
+             getInverse = getInverse)
 }
 
 ## Return a matrix that is the inverse of 'x'
@@ -63,7 +67,7 @@ makeCacheMatrix <- function(x = matrix()) {
 #[1] TRUE
 #
 cacheSolve <- function(x, ...) {
-        res <- x$getinverse() #try to get already cached value of inverted matrix
+        res <- x$getInverse() #try to get already cached value of inverted matrix
         if(!is.null(res)) {
                 # if cached value exists, just return it
                 message("getting cached data")
@@ -71,8 +75,10 @@ cacheSolve <- function(x, ...) {
         }
         # otherwise calculate inverted matrix
         res <- solve(x$get(), ...)
+
         # update the cached value of interted matrix
-        x$setinverse(res)
-        # and return value of inverted matrix
+        x$setInverse(res)
+
+        # return value of inverted matrix
         res
 }
