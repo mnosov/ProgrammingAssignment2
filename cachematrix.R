@@ -3,13 +3,76 @@
 
 ## Write a short comment describing this function
 
-makeCacheMatrix <- function(x = matrix()) {
 
+# creates a special "matrix", which is really a list containing functions to
+#    set the value of the matrix
+#    get the value of the matrix
+#    set the value of the inverted matrix (setinverse)
+#    get the value og the inverted matrix (getinverse)
+# Example:
+#   x<-makeCacheMatrix(rbind(c(1,2), c(1,1))
+#   x$get()
+#       [,1] [,2]
+#[1,]    1    2
+#[2,]    1    1
+makeCacheMatrix <- function(x = matrix()) {
+        inverse <- NULL # 'inverse' is cached value of inverted matrix
+        set <- function(y) {
+                x <<- y          # set x value to new matrix y
+                inverse <<- NULL # and clears cached value of inverted matrix
+        }
+        get <- function() x
+
+        #set 'inverse' value to specified argument's value
+        setinverse <- function(solve) inverse <<- solve
+
+        #get cached value set by 'setinverse' function
+        getinverse <- function() inverse
+
+        # return a list of those 4 functions
+        list(set = set, get = get,
+             setinverse = setinverse,
+             getinverse = getinverse)
 }
 
-
-## Write a short comment describing this function
-
+## Return a matrix that is the inverse of 'x'
+# x MUST be created with makeCacheMatrix function
+# Example of how to test:
+## 1) Create 'special' matrix using makeCacheMatrix
+#
+#> x <- makeCacheMatrix(rbind(c(1,2), c(1,0)))
+#
+## 2) Check that returned matrices via cacheSolve(x) and solve(x$get())
+##    are the same
+#
+#> identical(cacheSolve(x), solve(x$get()))
+# [1] TRUE  #Output MUST be TRUE for any invertible matrix
+#
+## 3) Check that next call of cacheSolve returns caches value, e.g.
+##    cacheSolve(x) will produce "getting cached data" message in the output
+#
+#> identical(cacheSolve(x), solve(x$get()))
+# getting cached data
+# [1] TRUE
+#
+## 4) Check that 'set' function clears cached matrix, e.g.
+#     there is no message 'getting cached data'  in the output
+#
+#> x$set(rbind(c(2,3),c(3,4)))
+#> identical(cacheSolve(x), solve(x$get()))
+#[1] TRUE
+#
 cacheSolve <- function(x, ...) {
-        ## Return a matrix that is the inverse of 'x'
+        res <- x$getinverse() #try to get already cached value of inverted matrix
+        if(!is.null(res)) {
+                # if cached value exists, just return it
+                message("getting cached data")
+                return(res)
+        }
+        # otherwise calculate inverted matrix
+        res <- solve(x$get(), ...)
+        # update the cached value of interted matrix
+        x$setinverse(res)
+        # and return value of inverted matrix
+        res
 }
